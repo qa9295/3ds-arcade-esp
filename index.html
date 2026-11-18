@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>3DS Arcade</title>
+<meta name="viewport" content="width=device-width">
+<style>
+html, body { margin:0; padding:0; background:#1a1a1a; color:#fff; font-family:Arial, Helvetica, sans-serif; font-size:14px; text-align:center; }
+h1 { margin:6px 0 4px 0; font-size:24px; color:#ff4455; }
+h2 { margin:0 0 4px 0; font-size:17px; color:#ffdc00; }
+p { margin:4px 0; }
+
+/* Zona de arriba = pantalla superior (400x240). Zona de abajo = pantalla tactil (320x240) */
+.top { height:240px; overflow:hidden; padding:6px 8px; -webkit-box-sizing:border-box; box-sizing:border-box; background:#1a1a1a; border-bottom:2px solid #444; }
+.bot { height:240px; overflow:hidden; padding:6px 0 0 0; -webkit-box-sizing:border-box; box-sizing:border-box; background:#262626; }
+
+button { -webkit-box-sizing:border-box; box-sizing:border-box; color:#fff; border:2px solid #fff; font-weight:bold; background:#e60012; }
+.btn { display:block; width:300px; margin:4px auto; padding:10px 0; font-size:16px; }
+.half { display:inline-block; width:146px; margin:2px; padding:10px 0; font-size:15px; }
+.menu { display:inline-block; width:148px; height:64px; margin:2px; padding:0; font-size:15px; }
+.key { display:inline-block; width:96px; height:38px; margin:2px; padding:0; font-size:18px; background:#0a7bd6; }
+.dp { width:90px; height:40px; margin:2px; padding:0; font-size:15px; background:#0a7bd6; }
+.big { display:block; width:300px; height:150px; margin:4px auto; font-size:24px; }
+.card { width:68px; height:52px; margin:2px; padding:0; background:#777; font-size:20px; }
+.back { background:#555; }
+.gap { display:inline-block; width:80px; }
+.num { font-size:34px; font-weight:bold; margin:6px 0; color:#fff; }
+.msg { min-height:18px; color:#7fdbff; font-weight:bold; }
+canvas { border:1px solid #fff; background:#000; }
+.foot { font-size:11px; color:#888; }
+</style>
+</head>
+<body>
+
+<noscript><p>Necesitas activar JavaScript para jugar.</p></noscript>
+
+<!-- ================= MENU ================= -->
+<div id="menu">
+  <div class="top">
+    <h1>3DS ARCADE</h1>
+    <p>Minijuegos ligeritos pa' la Old 3DS</p>
+    <p style="font-size:16px;color:#ffdc00">Escoge un juego en la pantalla de abajo</p>
+    <p class="foot">Hecho con cariño y pocos recursos jaja</p>
+  </div>
+  <div class="bot">
+    <button class="menu" onclick="show('g1')">Adivina el numero</button><button class="menu" onclick="show('g2')">Tap rapido</button><br>
+    <button class="menu" onclick="show('g3')">Memoria de colores</button><button class="menu" onclick="show('g4')">Piedra, papel o tijera</button><br>
+    <button class="menu" onclick="show('g5')">Snake</button><button class="menu" onclick="show('g6')">Que hago? (ruleta)</button>
+  </div>
+</div>
+
+<!-- ================= 1. ADIVINA EL NUMERO ================= -->
+<div id="g1" style="display:none">
+  <div class="top">
+    <h2>Adivina el numero</h2>
+    <p>Pensé un numero del 1 al 100</p>
+    <div class="num" id="gval">___</div>
+    <p class="msg" id="msg1">Usa el teclado de abajo</p>
+    <p>Intentos: <span id="tries">0</span></p>
+  </div>
+  <div class="bot">
+    <button class="key" onclick="guessKey('1')">1</button><button class="key" onclick="guessKey('2')">2</button><button class="key" onclick="guessKey('3')">3</button><br>
+    <button class="key" onclick="guessKey('4')">4</button><button class="key" onclick="guessKey('5')">5</button><button class="key" onclick="guessKey('6')">6</button><br>
+    <button class="key" onclick="guessKey('7')">7</button><button class="key" onclick="guessKey('8')">8</button><button class="key" onclick="guessKey('9')">9</button><br>
+    <button class="key back" onclick="guessClear()">Borrar</button><button class="key" onclick="guessKey('0')">0</button><button class="key" style="background:#2ecc40" onclick="guessTry()">OK</button><br>
+    <button class="half" onclick="guessStart()">Nuevo</button><button class="half back" onclick="show('menu')">Menu</button>
+  </div>
+</div>
+
+<!-- ================= 2. TAP RAPIDO ================= -->
+<div id="g2" style="display:none">
+  <div class="top">
+    <h2>Tap rapido</h2>
+    <p>Toca el boton de abajo lo mas rapido que puedas. El tiempo empieza con el primer toque.</p>
+    <div class="num"><span id="ttime">10.0</span> s</div>
+    <p>Toques: <span id="ttaps">0</span> &nbsp; Record: <span id="tbest">0</span></p>
+    <p class="msg" id="msg2">Listo?</p>
+  </div>
+  <div class="bot">
+    <button class="big" onclick="tapHit()">TOCA AQUI</button>
+    <button class="btn back" onclick="show('menu')">Menu</button>
+  </div>
+</div>
+
+<!-- ================= 3. MEMORIA ================= -->
+<div id="g3" style="display:none">
+  <div class="top">
+    <h2>Memoria de colores</h2>
+    <p>Encuentra las parejas tocando las cartas de abajo.</p>
+    <p class="msg" id="msg3" style="font-size:18px">Movimientos: 0</p>
+    <p>Cada color tiene su letra, por si acaso.</p>
+  </div>
+  <div class="bot">
+    <div id="memgrid"></div>
+    <button class="half" onclick="memStart()">Reiniciar</button><button class="half back" onclick="show('menu')">Menu</button>
+  </div>
+</div>
+
+<!-- ================= 4. PIEDRA PAPEL TIJERA ================= -->
+<div id="g4" style="display:none">
+  <div class="top">
+    <h2>Piedra, papel o tijera</h2>
+    <p class="msg" id="msg4" style="font-size:18px;margin-top:24px">Elige una!</p>
+    <p style="margin-top:24px">Tu: <span id="rw">0</span> &nbsp; Yo: <span id="rl">0</span> &nbsp; Empates: <span id="rt">0</span></p>
+  </div>
+  <div class="bot">
+    <button class="btn" style="height:44px;padding:0" onclick="rps(0)">Piedra</button>
+    <button class="btn" style="height:44px;padding:0" onclick="rps(1)">Papel</button>
+    <button class="btn" style="height:44px;padding:0" onclick="rps(2)">Tijera</button>
+    <button class="btn back" style="height:40px;padding:0" onclick="show('menu')">Menu</button>
+  </div>
+</div>
+
+<!-- ================= 5. SNAKE ================= -->
+<div id="g5" style="display:none">
+  <div class="top">
+    <h2>Snake</h2>
+    <table style="margin:0 auto" cellspacing="0" cellpadding="0">
+      <tr>
+        <td><canvas id="cv" width="200" height="200"></canvas></td>
+        <td valign="top" style="width:170px;padding-left:10px;text-align:left">
+          <p>Puntos: <span id="sscore">0</span></p>
+          <p>Record: <span id="sbest">0</span></p>
+          <p class="msg" id="msg5">Dale a Empezar</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="bot">
+    <div><button class="dp" onclick="snakeDir(0,-1)">Arriba</button></div>
+    <div><button class="dp" onclick="snakeDir(-1,0)">Izq</button><span class="gap"></span><button class="dp" onclick="snakeDir(1,0)">Der</button></div>
+    <div><button class="dp" onclick="snakeDir(0,1)">Abajo</button></div>
+    <div><button class="half" onclick="snakeStart()">Empezar</button><button class="half back" onclick="show('menu')">Menu</button></div>
+  </div>
+</div>
+
+<!-- ================= 6. RULETA ================= -->
+<div id="g6" style="display:none">
+  <div class="top">
+    <h2>Que hago?</h2>
+    <p>Piensa tu pregunta de si/no y dale a Girar en la pantalla de abajo.</p>
+    <p class="msg" id="msg6" style="font-size:22px;color:#ffdc00;margin-top:30px">...</p>
+  </div>
+  <div class="bot">
+    <button class="big" style="height:120px" onclick="oracle()">GIRAR</button>
+    <button class="btn back" onclick="show('menu')">Menu</button>
+  </div>
+</div>
+
+<script type="text/javascript">
+var screens = ['menu','g1','g2','g3','g4','g5','g6'];
+var tapTimer = null, snakeTimer = null;
+
+function $(id) { return document.getElementById(id); }
+function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+function save(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+function show(id) {
+  var i;
+  clearInterval(tapTimer); tapTimer = null;
+  clearInterval(snakeTimer); snakeTimer = null;
+  for (i = 0; i < screens.length; i++) {
+    $(screens[i]).style.display = (screens[i] === id) ? 'block' : 'none';
+  }
+  if (id === 'g1') guessStart();
+  if (id === 'g2') tapReset();
+  if (id === 'g3') memStart();
+  if (id === 'g4') { $('msg4').innerHTML = 'Elige una!'; }
+  if (id === 'g5') snakeReset();
+  if (id === 'g6') { $('msg6').innerHTML = '...'; }
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 1. ADIVINA EL NUMERO ---------- */
+var secret = 0, tries = 0, gv = '';
+function guessShow() { $('gval').innerHTML = (gv === '') ? '___' : gv; }
+function guessStart() {
+  secret = rnd(1, 100); tries = 0; gv = '';
+  $('tries').innerHTML = '0';
+  $('msg1').innerHTML = 'Usa el teclado de abajo';
+  guessShow();
+}
+function guessKey(d) {
+  if (gv.length < 3) { gv += d; guessShow(); }
+}
+function guessClear() { gv = ''; guessShow(); }
+function guessTry() {
+  var n = parseInt(gv, 10);
+  if (isNaN(n) || n < 1 || n > 100) {
+    $('msg1').innerHTML = 'Del 1 al 100, porfa';
+    gv = ''; guessShow();
+    return;
+  }
+  tries++;
+  $('tries').innerHTML = tries;
+  if (n === secret) { $('msg1').innerHTML = 'Le diste! Era el ' + secret + ' en ' + tries + ' intentos'; }
+  else if (n < secret) { $('msg1').innerHTML = n + '... mas alto'; }
+  else { $('msg1').innerHTML = n + '... mas bajo'; }
+  gv = ''; guessShow();
+}
+
+/* ---------- 2. TAP RAPIDO ---------- */
+var taps = 0, tleft = 10.0, tapRunning = false;
+function tapReset() {
+  taps = 0; tleft = 10.0; tapRunning = false;
+  $('ttaps').innerHTML = '0';
+  $('ttime').innerHTML = '10.0';
+  $('msg2').innerHTML = 'Listo?';
+  $('tbest').innerHTML = load('tapbest') || '0';
+}
+function tapHit() {
+  if (!tapRunning) {
+    if (tleft <= 0) { tapReset(); }
+    tapRunning = true;
+    tapTimer = setInterval(tapTick, 100);
+    $('msg2').innerHTML = 'DALE DALE DALE!';
+  }
+  taps++;
+  $('ttaps').innerHTML = taps;
+}
+function tapTick() {
+  tleft -= 0.1;
+  if (tleft <= 0.05) {
+    tleft = 0;
+    clearInterval(tapTimer); tapTimer = null;
+    tapRunning = false;
+    var best = parseInt(load('tapbest') || '0', 10);
+    if (taps > best) { save('tapbest', taps); $('tbest').innerHTML = taps; $('msg2').innerHTML = 'Nuevo record: ' + taps + ' toques!'; }
+    else { $('msg2').innerHTML = 'Tiempo! Hiciste ' + taps + ' toques'; }
+  }
+  $('ttime').innerHTML = tleft.toFixed(1);
+}
+
+/* ---------- 3. MEMORIA ---------- */
+var memColors = ['#e60012','#0a7bd6','#2ecc40','#d4a900','#b10dc9','#ff851b'];
+var memLetters = ['A','B','C','D','E','F'];
+var memCards = [], memState = [], memFlipped = [], memLock = false, memMoves = 0, memMatched = 0;
+function memStart() {
+  var i, j, t, html = '';
+  memCards = [];
+  for (i = 0; i < 6; i++) { memCards.push(i); memCards.push(i); }
+  for (i = memCards.length - 1; i > 0; i--) {
+    j = rnd(0, i); t = memCards[i]; memCards[i] = memCards[j]; memCards[j] = t;
+  }
+  memState = []; memFlipped = []; memLock = false; memMoves = 0; memMatched = 0;
+  for (i = 0; i < 12; i++) {
+    memState.push(0);
+    html += '<button id="c' + i + '" class="card" onclick="memFlip(' + i + ')">?</button>';
+    if (i % 4 === 3) { html += '<br>'; }
+  }
+  $('memgrid').innerHTML = html;
+  $('msg3').innerHTML = 'Movimientos: 0';
+}
+function memShow(i) {
+  var b = $('c' + i);
+  b.style.background = memColors[memCards[i]];
+  b.innerHTML = memLetters[memCards[i]];
+}
+function memHide(i) {
+  var b = $('c' + i);
+  b.style.background = '#777';
+  b.innerHTML = '?';
+}
+function memFlip(i) {
+  if (memLock || memState[i] !== 0) { return; }
+  memState[i] = 1;
+  memShow(i);
+  memFlipped.push(i);
+  if (memFlipped.length === 2) {
+    memMoves++;
+    $('msg3').innerHTML = 'Movimientos: ' + memMoves;
+    var a = memFlipped[0], b = memFlipped[1];
+    if (memCards[a] === memCards[b]) {
+      memState[a] = 2; memState[b] = 2; memMatched++; memFlipped = [];
+      if (memMatched === 6) { $('msg3').innerHTML = 'Ganaste en ' + memMoves + ' movimientos!'; }
+    } else {
+      memLock = true;
+      setTimeout(function () {
+        memState[a] = 0; memState[b] = 0;
+        memHide(a); memHide(b);
+        memFlipped = []; memLock = false;
+      }, 800);
+    }
+  }
+}
+
+/* ---------- 4. PIEDRA PAPEL TIJERA ---------- */
+var rpsNames = ['Piedra','Papel','Tijera'];
+var rw = 0, rl = 0, rt = 0;
+function rps(you) {
+  var me = rnd(0, 2), txt;
+  if (you === me) { rt++; txt = 'Empate, los dos sacamos ' + rpsNames[me]; }
+  else if ((you + 1) % 3 === me) { rl++; txt = 'Saque ' + rpsNames[me] + '. Te gane jaja'; }
+  else { rw++; txt = 'Saque ' + rpsNames[me] + '. Ni modo, ganaste'; }
+  $('msg4').innerHTML = txt;
+  $('rw').innerHTML = rw; $('rl').innerHTML = rl; $('rt').innerHTML = rt;
+}
+
+/* ---------- 5. SNAKE ---------- */
+var CELL = 10, GRID = 20;
+var sn = [], dir = {x:1,y:0}, nd = {x:1,y:0}, food = {x:5,y:5}, sScore = 0, sAlive = false;
+function snakeDraw() {
+  var c = $('cv'), ctx, i;
+  if (!c.getContext) { return; }
+  ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, 200, 200);
+  ctx.fillStyle = '#e60012';
+  ctx.fillRect(food.x * CELL, food.y * CELL, CELL, CELL);
+  ctx.fillStyle = '#2ecc40';
+  for (i = 0; i < sn.length; i++) {
+    ctx.fillRect(sn[i].x * CELL, sn[i].y * CELL, CELL - 1, CELL - 1);
+  }
+}
+function snakePlaceFood() {
+  var ok = false, i;
+  while (!ok) {
+    food = {x: rnd(0, GRID - 1), y: rnd(0, GRID - 1)};
+    ok = true;
+    for (i = 0; i < sn.length; i++) { if (sn[i].x === food.x && sn[i].y === food.y) { ok = false; } }
+  }
+}
+function snakeReset() {
+  sn = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  dir = {x:1,y:0}; nd = {x:1,y:0}; sScore = 0; sAlive = false;
+  snakePlaceFood();
+  $('sscore').innerHTML = '0';
+  $('sbest').innerHTML = load('snakebest') || '0';
+  $('msg5').innerHTML = 'Dale a Empezar';
+  snakeDraw();
+}
+function snakeStart() {
+  clearInterval(snakeTimer);
+  snakeReset();
+  sAlive = true;
+  $('msg5').innerHTML = 'Ahi va la viborita!';
+  snakeTimer = setInterval(snakeStep, 160);
+}
+function snakeDir(x, y) {
+  if (x === -dir.x && y === -dir.y) { return; }
+  nd = {x:x, y:y};
+}
+function snakeStep() {
+  var i, head;
+  dir = nd;
+  head = {x: sn[0].x + dir.x, y: sn[0].y + dir.y};
+  if (head.x < 0 || head.y < 0 || head.x >= GRID || head.y >= GRID) { snakeOver(); return; }
+  for (i = 0; i < sn.length; i++) {
+    if (sn[i].x === head.x && sn[i].y === head.y) { snakeOver(); return; }
+  }
+  sn.unshift(head);
+  if (head.x === food.x && head.y === food.y) {
+    sScore++;
+    $('sscore').innerHTML = sScore;
+    snakePlaceFood();
+  } else {
+    sn.pop();
+  }
+  snakeDraw();
+}
+function snakeOver() {
+  clearInterval(snakeTimer); snakeTimer = null; sAlive = false;
+  var best = parseInt(load('snakebest') || '0', 10);
+  if (sScore > best) { save('snakebest', sScore); $('sbest').innerHTML = sScore; $('msg5').innerHTML = 'Game over! Nuevo record: ' + sScore; }
+  else { $('msg5').innerHTML = 'Game over! Hiciste ' + sScore + ' puntos'; }
+}
+
+/* ---------- 6. RULETA ---------- */
+var answers = [
+  'Si, dale sin miedo',
+  'Mejor no jaja',
+  'Primero come algo',
+  'Hazlo y ya, que',
+  'Echale ganas',
+  'Tomate una siesta',
+  'Pregunta a tu mama',
+  'Juega otro minijuego',
+  'Los astros dicen que si',
+  'Ni de loco',
+  'Quien sabe, tira una moneda',
+  'Obvio que si'
+];
+function oracle() {
+  $('msg6').innerHTML = answers[rnd(0, answers.length - 1)];
+}
+
+show('menu');
+</script>
+</body>
+</html>
